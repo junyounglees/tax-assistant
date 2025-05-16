@@ -45,6 +45,21 @@ Thumbs.db
 .cache/
 *.cache
 
+# Test and debug files  
+tests/
+!tests/demos/demo_delegated_laws_batch.py
+!tests/demos/demo_delegated_laws_final.py
+debug_*.py
+test_*.py
+demo_*.py
+!src/**/*.py
+
+# Old or temporary files
+run.py
+run_select_one.py
+search.sh
+cleanup_files.py
+
 # Environment variables
 .env
 .env.*
