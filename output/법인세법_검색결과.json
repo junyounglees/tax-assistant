@@ -1,0 +1,35 @@
+[
+  {
+    "mst": "269881",
+    "name": "법인세법",
+    "law_type": "법률",
+    "department": "기획재정부",
+    "enforcement_date": "20250314",
+    "promulgation_date": "20250314",
+    "promulgation_number": "20775",
+    "law_id": "001563",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=269881&type=HTML&mobileYn=&efYd=20250314"
+  },
+  {
+    "mst": "269543",
+    "name": "법인세법 시행령",
+    "law_type": "대통령령",
+    "department": "기획재정부",
+    "enforcement_date": "20250228",
+    "promulgation_date": "20250228",
+    "promulgation_number": "35350",
+    "law_id": "003608",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=269543&type=HTML&mobileYn=&efYd=20250228"
+  },
+  {
+    "mst": "270235",
+    "name": "법인세법 시행규칙",
+    "law_type": "기획재정부령",
+    "department": "기획재정부",
+    "enforcement_date": "20250321",
+    "promulgation_date": "20250321",
+    "promulgation_number": "01112",
+    "law_id": "007229",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=270235&type=HTML&mobileYn=&efYd=20250321"
+  }
+]

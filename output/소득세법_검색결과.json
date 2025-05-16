@@ -1,0 +1,35 @@
+[
+  {
+    "mst": "267581",
+    "name": "소득세법",
+    "law_type": "법률",
+    "department": "기획재정부",
+    "enforcement_date": "20250101",
+    "promulgation_date": "20241231",
+    "promulgation_number": "20615",
+    "law_id": "001565",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=267581&type=HTML&mobileYn=&efYd=20250101"
+  },
+  {
+    "mst": "269541",
+    "name": "소득세법 시행령",
+    "law_type": "대통령령",
+    "department": "기획재정부",
+    "enforcement_date": "20250228",
+    "promulgation_date": "20250228",
+    "promulgation_number": "35349",
+    "law_id": "003956",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=269541&type=HTML&mobileYn=&efYd=20250228"
+  },
+  {
+    "mst": "270249",
+    "name": "소득세법 시행규칙",
+    "law_type": "기획재정부령",
+    "department": "기획재정부",
+    "enforcement_date": "20250401",
+    "promulgation_date": "20250321",
+    "promulgation_number": "01124",
+    "law_id": "007507",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=270249&type=HTML&mobileYn=&efYd=20250401"
+  }
+]

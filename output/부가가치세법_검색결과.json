@@ -1,0 +1,35 @@
+[
+  {
+    "mst": "267579",
+    "name": "부가가치세법",
+    "law_type": "법률",
+    "department": "기획재정부",
+    "enforcement_date": "20250101",
+    "promulgation_date": "20241231",
+    "promulgation_number": "20614",
+    "law_id": "001571",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=267579&type=HTML&mobileYn=&efYd=20250101"
+  },
+  {
+    "mst": "269547",
+    "name": "부가가치세법 시행령",
+    "law_type": "대통령령",
+    "department": "기획재정부",
+    "enforcement_date": "20250228",
+    "promulgation_date": "20250228",
+    "promulgation_number": "35353",
+    "law_id": "003666",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=269547&type=HTML&mobileYn=&efYd=20250228"
+  },
+  {
+    "mst": "270263",
+    "name": "부가가치세법 시행규칙",
+    "law_type": "기획재정부령",
+    "department": "기획재정부",
+    "enforcement_date": "20250321",
+    "promulgation_date": "20250321",
+    "promulgation_number": "01116",
+    "law_id": "007289",
+    "detail_link": "/DRF/lawService.do?OC=lee&target=law&MST=270263&type=HTML&mobileYn=&efYd=20250321"
+  }
+]

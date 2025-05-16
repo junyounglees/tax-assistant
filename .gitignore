@@ -1,0 +1,64 @@
+# Claude settings
+**/.claude/settings.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+PIPFILE.lock
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific cache
+.cache/
+*.cache
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+*.log
+
+# Keep these files
+!src/**/*.py
+!ARCHITECTURE.md
+!CLAUDE.md
+!CODING_GUIDELINES.md
+!README.md
+!main.py
+!run.py
+!law_search.py
+!search.sh
