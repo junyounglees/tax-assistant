@@ -5,6 +5,7 @@ from ...use_cases.search_law import SearchLawUseCase
 from ...use_cases.get_law_full_text import GetLawFullTextUseCase
 from ...use_cases.view_law_articles import ViewLawArticlesUseCase
 from ...use_cases.view_delegated_laws import ViewDelegatedLawsUseCase
+from ...domain.entities.article import Article, LawContent
 
 
 class CLIController:
@@ -155,6 +156,8 @@ class CLIController:
                 if len(matching_articles) == 1:
                     # Single match, show it directly
                     self.presenter.display_article_content(matching_articles[0], law_content.from_cache, used_cache_file)
+                    # Ask if user wants to see delegated laws
+                    self._prompt_for_delegated_laws(matching_articles[0], mst, law_content)
                 elif len(matching_articles) > 1:
                     # Multiple matches, show selection menu
                     self.presenter.display_success(f"제{article_num}조에 해당하는 조문이 {len(matching_articles)}개 있습니다.")
@@ -166,6 +169,8 @@ class CLIController:
                         index = int(selection) - 1
                         if 0 <= index < len(matching_articles):
                             self.presenter.display_article_content(matching_articles[index], law_content.from_cache, used_cache_file)
+                            # Ask if user wants to see delegated laws
+                            self._prompt_for_delegated_laws(matching_articles[index], mst, law_content)
                         else:
                             self.presenter.display_error("잘못된 선택입니다.")
                     except ValueError:
@@ -216,8 +221,8 @@ class CLIController:
                 article_num = self.presenter.get_article_number()
                 
                 # Get article with delegated content
-                result = self.view_delegated_laws_use_case.get_article_with_delegated_content(
-                    mst, article_num
+                result = self.view_delegated_laws_use_case.get_delegated_laws_for_article(
+                    mst, article_num, law_content
                 )
                 
                 if result and result.get('primary_article'):
@@ -239,8 +244,8 @@ class CLIController:
                         selection = input("\n조문 번호를 선택하세요 (0: 뒤로가기): ").strip()
                         if selection != '0':
                             article_num = selection
-                            result = self.view_delegated_laws_use_case.get_article_with_delegated_content(
-                                mst, article_num
+                            result = self.view_delegated_laws_use_case.get_delegated_laws_for_article(
+                                mst, article_num, law_content
                             )
                             if result and result.get('primary_article'):
                                 self.presenter.display_article_with_delegated_content(result)
@@ -252,6 +257,22 @@ class CLIController:
                     self.presenter.display_error("위임 법령을 참조하는 조문이 없습니다.")
             else:
                 self.presenter.display_error("잘못된 선택입니다.")
+    
+    def _prompt_for_delegated_laws(self, article, mst: str, law_content):
+        """Prompt user to view delegated laws for the article."""
+        if article.has_delegated_law_references():
+            print("\n이 조문은 위임 법령을 참조하고 있습니다.")
+            choice = input("위임 법령 내용을 보시겠습니까? (y/N): ").strip().lower()
+            
+            if choice == 'y':
+                result = self.view_delegated_laws_use_case.get_delegated_laws_for_article(
+                    mst, article.article_number, law_content
+                )
+                
+                if result and result.get('delegated_content'):
+                    self.presenter.display_article_with_delegated_content(result)
+                else:
+                    self.presenter.display_error("위임 법령 내용을 찾을 수 없습니다.")
     
     def _generate_law_url(self, law_name: str) -> str:
         """Generate law.go.kr URL from law name."""

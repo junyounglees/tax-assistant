@@ -43,6 +43,13 @@ This will show a numbered menu:
 8. 직접 입력
 0. 종료
 
+After selecting a law, you can:
+- View article list
+- Search articles by number
+- Search articles by keyword
+- Open in web browser
+- View delegated laws (위임법령)
+
 ### 2. Command Line Search
 ```bash
 python main.py 소득세법
@@ -65,6 +72,26 @@ This project follows Clean Architecture principles. See [ARCHITECTURE.md](ARCHIT
 - **Maintainable**: Clear separation of concerns
 - **Scalable**: Easy to add new features
 
+## Features
+
+### Law Search and Navigation
+- Search laws by name or common abbreviations
+- Browse articles within laws
+- Search articles by number or keyword
+- Direct web browser integration
+
+### Delegated Laws (위임법령)
+- Automatically detect articles that reference delegated laws
+- Retrieve and display delegated law content
+- View specific articles from delegated laws
+- Support for 시행령, 시행규칙, 행정규칙, and 자치법규
+
+### Advanced Caching
+- 7-day cache for law content and delegated laws
+- Separate cache directories for different data types
+- Automatic cache validation and cleanup
+- Cache status indicators in UI
+
 ## Configuration
 
 The application can be configured using environment variables:
@@ -82,6 +109,7 @@ python main.py
 
 - **Search API**: `http://www.law.go.kr/DRF/lawSearch.do`
 - **Full Text API**: `http://www.law.go.kr/DRF/lawService.do`
+- **Delegated Law API**: `http://www.law.go.kr/DRF/lawService.do?target=lsDelegated`
 - **Format**: JSON
 
 ## Development

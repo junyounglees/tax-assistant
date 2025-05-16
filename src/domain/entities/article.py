@@ -43,6 +43,31 @@ class Article:
         except:
             return self.article_number
     
+    @property
+    def normalized_number(self) -> str:
+        """Get normalized article number for matching with delegated laws.
+        
+        Converts formats like:
+        - 제1조 -> 1
+        - 제1조의2 -> 1_2
+        - article_number=1 with content 제1조의2 -> 1_2
+        """
+        # Try to extract from formatted number first
+        formatted = self.formatted_number
+        
+        # Parse the formatted number
+        match = re.match(r'^제(\d+)조(?:의(\d+))?', formatted)
+        if match:
+            main_num = match.group(1)
+            sub_num = match.group(2)
+            if sub_num:
+                return f"{main_num}_{sub_num}"
+            else:
+                return main_num
+        
+        # Fallback to the raw article_number
+        return self.article_number
+    
     def has_delegated_law_references(self) -> bool:
         """Check if article contains references to delegated laws."""
         for pattern in self.DELEGATION_PATTERNS:

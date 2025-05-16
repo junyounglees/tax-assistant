@@ -2,6 +2,7 @@
 from .config.settings import Settings
 from ..data.api.law_api_client import LawAPIClient
 from ..data.repositories.law_repository import LawRepository
+from ..data.repositories.delegated_law_repository import DelegatedLawRepositoryImpl
 from ..use_cases.search_law import SearchLawUseCase
 from ..use_cases.get_law_full_text import GetLawFullTextUseCase
 from ..use_cases.view_law_articles import ViewLawArticlesUseCase
@@ -16,6 +17,7 @@ class Container:
         self.settings = Settings.from_env()
         self._api_client = None
         self._repository = None
+        self._delegated_law_repository = None
         self._search_use_case = None
         self._full_text_use_case = None
         self._view_articles_use_case = None
@@ -35,6 +37,17 @@ class Container:
         if self._repository is None:
             self._repository = LawRepository(self.api_client, self.settings.output_dir)
         return self._repository
+    
+    @property
+    def delegated_law_repository(self) -> DelegatedLawRepositoryImpl:
+        """Get delegated law repository instance."""
+        if self._delegated_law_repository is None:
+            self._delegated_law_repository = DelegatedLawRepositoryImpl(
+                self.api_client, 
+                cache_dir='.cache/delegated_laws',
+                cache_ttl_days=7
+            )
+        return self._delegated_law_repository
     
     @property
     def search_use_case(self) -> SearchLawUseCase:
@@ -61,7 +74,10 @@ class Container:
     def view_delegated_laws_use_case(self) -> ViewDelegatedLawsUseCase:
         """Get view delegated laws use case instance."""
         if self._view_delegated_laws_use_case is None:
-            self._view_delegated_laws_use_case = ViewDelegatedLawsUseCase(self.repository)
+            self._view_delegated_laws_use_case = ViewDelegatedLawsUseCase(
+                self.delegated_law_repository,
+                self.repository
+            )
         return self._view_delegated_laws_use_case
     
     @property

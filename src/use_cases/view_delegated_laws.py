@@ -1,126 +1,198 @@
-"""Use case for viewing delegated law articles."""
-from typing import Optional, List, Dict
+"""Use case for viewing delegated laws."""
+from typing import Dict, List, Optional
+from ..domain.interfaces.delegated_law_repository import DelegatedLawRepository
 from ..domain.interfaces.law_repository import LawRepositoryInterface
-from ..domain.entities.article import LawContent, Article
-from ..domain.entities.law import Law
+from ..domain.entities.article import Article, LawContent
+from ..domain.entities.delegated_law import DelegatedLawResponse, DelegatedLawItem
 
 
 class ViewDelegatedLawsUseCase:
-    """Use case for discovering and viewing delegated law articles."""
+    """Use case for viewing delegated laws."""
     
-    def __init__(self, repository: LawRepositoryInterface):
-        self.repository = repository
+    def __init__(self, delegated_law_repository: DelegatedLawRepository, 
+                 law_repository: LawRepositoryInterface):
+        self.delegated_law_repository = delegated_law_repository
+        self.law_repository = law_repository
     
-    def find_delegated_laws(self, primary_law_name: str) -> List[Law]:
-        """Find delegated laws (시행령, 시행규칙) for a primary law."""
+    def _normalize_article_number(self, article_number: str) -> str:
+        """Normalize article number to match between different formats.
         
-        # Map primary law names to corresponding delegated law names
-        delegated_patterns = {
-            '시행령': [f'{primary_law_name} 시행령', f'{primary_law_name}시행령'],
-            '시행규칙': [f'{primary_law_name} 시행규칙', f'{primary_law_name}시행규칙']
-        }
+        Handles conversions like:
+        - '1' -> '1'
+        - '1_2' -> '1_2' 
+        - '0001' -> '1'
+        - '0001_2' -> '1_2'
+        """
+        # Remove leading zeros
+        parts = article_number.split('_')
+        normalized_parts = []
+        for part in parts:
+            try:
+                # Convert to int to remove leading zeros, then back to string
+                normalized_parts.append(str(int(part)))
+            except ValueError:
+                # Keep as is if not a number
+                normalized_parts.append(part)
         
-        delegated_laws = []
-        
-        # Search for each type of delegated law
-        for law_type, patterns in delegated_patterns.items():
-            for pattern in patterns:
-                # Use existing search functionality to find delegated laws
-                results = self.repository.search_laws(pattern, display=10)
-                if results:
-                    # Filter to ensure we get the correct delegated law
-                    for law in results:
-                        if law.law_type in ['대통령령', '기획재정부령', '부령']:
-                            delegated_laws.append(law)
-                            break  # Found one, move to next type
-                    break  # Found one pattern match, don't try alternative patterns
-        
-        return delegated_laws
+        return '_'.join(normalized_parts)
     
-    def find_related_articles(self, primary_article: Article, delegated_law_mst: str, context_keywords: List[str] = None) -> List[Article]:
-        """Find articles in delegated law that relate to a primary law article."""
+    def get_delegated_laws_for_article(self, mst: str, article_number: str, law_content: LawContent) -> Dict:
+        """Get delegated laws for a specific article.
         
-        # Get the full content of the delegated law
-        delegated_law_content = self.repository.get_law_content(delegated_law_mst)
-        if not delegated_law_content:
-            return []
+        Args:
+            mst: Law master number
+            article_number: Article number to check
+            law_content: Full law content with articles
+            
+        Returns:
+            Dictionary containing:
+            - primary_article: The main article
+            - has_delegated_references: Boolean indicating if article has delegated law references
+            - delegated_references: List of references in the article
+            - delegated_content: List of delegated law content if found
+        """
+        # Find the article in law_content
+        primary_article = None
         
-        related_articles = []
+        # First, try to find by formatted number if the article_number looks like one
+        if article_number.startswith('제') and '조' in article_number:
+            # This is a formatted number like "제1조의2"
+            for article in law_content.articles:
+                if article.formatted_number == article_number:
+                    primary_article = article
+                    break
         
-        # First, try to find articles with the same number
-        if primary_article.article_number:
-            for article in delegated_law_content.articles:
-                if article.article_number == primary_article.article_number:
-                    related_articles.append(article)
-        
-        # If no direct number match, search by context keywords
-        if not related_articles and context_keywords:
-            for article in delegated_law_content.articles:
-                content_lower = article.article_content.lower()
-                for keyword in context_keywords:
-                    if keyword.lower() in content_lower:
-                        related_articles.append(article)
-                        break  # Found keyword match, add article once
-        
-        # If still no matches, search for title similarities
-        if not related_articles and primary_article.article_title:
-            title_words = primary_article.article_title.split()
-            for article in delegated_law_content.articles:
-                if article.article_title:
-                    for word in title_words:
-                        if len(word) > 2 and word in article.article_title:
-                            related_articles.append(article)
-                            break
-        
-        return related_articles
-    
-    def get_article_with_delegated_content(self, primary_law_mst: str, article_number: str) -> Dict:
-        """Get an article along with its related delegated law content."""
-        
-        # Get the primary article
-        primary_article = self.repository.get_law_article(primary_law_mst, article_number)
+        # If not found, normalize the requested number
         if not primary_article:
-            return {}
+            normalized_requested = self._normalize_article_number(article_number)
+            
+            # Try to find by normalized number
+            for article in law_content.articles:
+                article_normalized = article.normalized_number
+                if article_normalized == normalized_requested:
+                    primary_article = article
+                    break
+        
+        # Last resort: raw article_number match
+        if not primary_article:
+            for article in law_content.articles:
+                if article.article_number == article_number:
+                    primary_article = article
+                    break
+        
+        if not primary_article:
+            return {
+                'primary_article': None,
+                'has_delegated_references': False,
+                'delegated_references': [],
+                'delegated_content': []
+            }
+        
+        # Check if article has delegated law references
+        has_references = primary_article.has_delegated_law_references()
+        references = primary_article.get_delegated_law_references()
         
         result = {
             'primary_article': primary_article,
-            'has_delegated_references': primary_article.has_delegated_law_references(),
-            'delegated_law_types': primary_article.get_delegated_law_types(),
-            'delegated_references': primary_article.get_delegated_law_references(),
+            'has_delegated_references': has_references,
+            'delegated_references': references,
             'delegated_content': []
         }
         
-        # If article has delegated law references, find related content
-        if result['has_delegated_references']:
-            # First get the primary law content to get its name
-            primary_law_content = self.repository.get_law_content(primary_law_mst)
-            if primary_law_content:
-                primary_law_name = primary_law_content.law_name.replace('법', '').strip()
-                
-                # Find delegated laws
-                delegated_laws = self.find_delegated_laws(primary_law_name + '법')
-                
-                # Extract context keywords from the references
-                context_keywords = []
-                for ref in result['delegated_references']:
-                    # Extract meaningful words from context
-                    words = ref['context'].split()
-                    for word in words:
-                        if len(word) > 2 and word not in ['대통령령으로', '정하는', '정한다', '따라', '의한']:
-                            context_keywords.append(word)
-                
-                # Search for related articles in each delegated law
-                for delegated_law in delegated_laws:
-                    related_articles = self.find_related_articles(
-                        primary_article, 
-                        delegated_law.mst, 
-                        context_keywords[:5]  # Limit keywords to avoid over-matching
-                    )
-                    
-                    if related_articles:
-                        result['delegated_content'].append({
-                            'law': delegated_law,
-                            'articles': related_articles
-                        })
+        if not has_references:
+            return result
+        
+        # Get delegated laws from repository
+        delegated_response = self.delegated_law_repository.get_delegated_laws(mst)
+        
+        if not delegated_response or not delegated_response.has_delegated_laws:
+            return result
+        
+        # Find relevant delegated laws for this article
+        # Use the article's normalized number for comparison
+        normalized_article_num = primary_article.normalized_number
+        
+        relevant_items = []
+        for item in delegated_response.all_delegated_items:
+            # Normalize the item's article number for comparison
+            item_normalized = self._normalize_article_number(item.article_number)
+            if item_normalized == normalized_article_num:
+                relevant_items.append(item)
+        
+        # Fetch content for each delegated law
+        for item in relevant_items:
+            delegated_content = self._fetch_delegated_law_content(item)
+            if delegated_content:
+                result['delegated_content'].append(delegated_content)
         
         return result
+    
+    def get_articles_with_delegated_references(self, law_content: LawContent) -> List[Article]:
+        """Get all articles that have delegated law references.
+        
+        Args:
+            law_content: Full law content
+            
+        Returns:
+            List of articles that reference delegated laws
+        """
+        articles_with_refs = []
+        
+        for article in law_content.articles:
+            if article.has_delegated_law_references():
+                articles_with_refs.append(article)
+        
+        return articles_with_refs
+    
+    def _fetch_delegated_law_content(self, item: DelegatedLawItem) -> Optional[Dict]:
+        """Fetch the actual content of a delegated law.
+        
+        Args:
+            item: Delegated law item
+            
+        Returns:
+            Dictionary with law info and relevant articles
+        """
+        # Search for the delegated law
+        search_results = self.law_repository.search_laws(item.delegated_title)
+        
+        if not search_results:
+            return None
+        
+        # Find the exact match by MST if available
+        matching_law = None
+        for law in search_results:
+            if law.mst == item.delegated_mst:
+                matching_law = law
+                break
+        
+        # If no exact match, use the first result
+        if not matching_law and search_results:
+            matching_law = search_results[0]
+        
+        if not matching_law:
+            return None
+        
+        # Get full content of the delegated law
+        law_content = self.law_repository.get_law_content(matching_law.mst)
+        
+        if not law_content:
+            return None
+        
+        # Find relevant articles based on the reference
+        relevant_articles = []
+        
+        if item.delegated_article_number:
+            # Find specific article mentioned in the reference
+            article_num = item.delegated_article_number.replace("제", "").replace("조", "")
+            for article in law_content.articles:
+                if article.article_number.startswith(article_num):
+                    relevant_articles.append(article)
+        else:
+            # If no specific article, include first few relevant articles
+            relevant_articles = law_content.articles[:5]
+        
+        return {
+            'law': matching_law,
+            'articles': relevant_articles
+        }
