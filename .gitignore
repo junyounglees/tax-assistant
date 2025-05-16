@@ -46,7 +46,8 @@ Thumbs.db
 *.cache
 
 # Test and debug files  
-tests/
+tests/*
+!tests/demo/
 !tests/demos/demo_delegated_laws_batch.py
 !tests/demos/demo_delegated_laws_final.py
 debug_*.py

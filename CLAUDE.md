@@ -3,6 +3,13 @@
 ## Project Overview
 This is a Korean Law Search API client implemented using Clean Architecture principles. It allows searching for Korean laws and retrieving their full text via the law.go.kr API.
 
+## Project Structure
+- **src/** - Main application code following clean architecture
+- **tests/** - Test files and demo scripts
+- **utils/** - Standalone utility scripts
+- **docs/** - Documentation files
+- **output/** - API response outputs
+
 ## Architecture Layers
 
 ### 1. Domain Layer (`src/domain/`)
